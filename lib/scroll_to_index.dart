@@ -27,10 +27,10 @@ Rect defaultViewportBoundaryGetter() => Rect.zero;
 
 abstract class AutoScrollController implements ScrollController {
   factory AutoScrollController(
-      {double initialScrollOffset: 0.0,
-      bool keepScrollOffset: true,
+      {double initialScrollOffset = 0.0,
+      bool keepScrollOffset = true,
       double? suggestedRowHeight,
-      ViewportBoundaryGetter viewportBoundaryGetter:
+      ViewportBoundaryGetter viewportBoundaryGetter =
           defaultViewportBoundaryGetter,
       Axis? axis,
       String? debugLabel,
@@ -72,14 +72,13 @@ abstract class AutoScrollController implements ScrollController {
 
   /// scroll to the giving index
   Future scrollToIndex(int index,
-      {Duration duration: scrollAnimationDuration,
-      AutoScrollPosition? preferPosition});
+      {Duration duration = scrollAnimationDuration, double? preferPosition});
 
   /// highlight the item
   Future highlight(int index,
-      {bool cancelExistHighlights: true,
-      Duration highlightDuration: _highlightDuration,
-      bool animated: true});
+      {bool cancelExistHighlights = true,
+      Duration highlightDuration = _highlightDuration,
+      bool animated = true});
 
   /// cancel all highlight item immediately.
   void cancelAllHighlights();
@@ -101,10 +100,10 @@ class SimpleAutoScrollController extends ScrollController
   final AxisValueGetter endGetter;
 
   SimpleAutoScrollController(
-      {double initialScrollOffset: 0.0,
-      bool keepScrollOffset: true,
+      {double initialScrollOffset = 0.0,
+      bool keepScrollOffset = true,
       this.suggestedRowHeight,
-      this.viewportBoundaryGetter: defaultViewportBoundaryGetter,
+      this.viewportBoundaryGetter = defaultViewportBoundaryGetter,
       required this.beginGetter,
       required this.endGetter,
       AutoScrollController? copyTagsFrom,
@@ -129,11 +128,11 @@ class PageAutoScrollController extends PageController
   final AxisValueGetter endGetter = (r) => r.right;
 
   PageAutoScrollController(
-      {int initialPage: 0,
-      bool keepPage: true,
-      double viewportFraction: 1.0,
+      {int initialPage = 0,
+      bool keepPage = true,
+      double viewportFraction = 1.0,
       this.suggestedRowHeight,
-      this.viewportBoundaryGetter: defaultViewportBoundaryGetter,
+      this.viewportBoundaryGetter = defaultViewportBoundaryGetter,
       AutoScrollController? copyTagsFrom,
       String? debugLabel})
       : super(
@@ -144,7 +143,6 @@ class PageAutoScrollController extends PageController
   }
 }
 
-enum AutoScrollPosition { begin, middle, end }
 mixin AutoScrollControllerMixin on ScrollController
     implements AutoScrollController {
   @override
@@ -202,8 +200,8 @@ mixin AutoScrollControllerMixin on ScrollController
   static const maxBound = 30; // 0.5 second if 60fps
   @override
   Future scrollToIndex(int index,
-      {Duration duration: scrollAnimationDuration,
-      AutoScrollPosition? preferPosition}) async {
+      {Duration duration = scrollAnimationDuration,
+      double? preferPosition}) async {
     return co(
         this,
         () => _scrollToIndex(index,
@@ -211,8 +209,8 @@ mixin AutoScrollControllerMixin on ScrollController
   }
 
   Future _scrollToIndex(int index,
-      {Duration duration: scrollAnimationDuration,
-      AutoScrollPosition? preferPosition}) async {
+      {Duration duration = scrollAnimationDuration,
+      double? preferPosition}) async {
     assert(duration > Duration.zero);
 
     // In listView init or reload case, widget state of list item may not be ready for query.
@@ -268,12 +266,11 @@ mixin AutoScrollControllerMixin on ScrollController
         prevOffset = currentOffset;
         final nearest = _getNearestIndex(index);
 
-        if (tagMap[nearest ?? 0] == null) 
-          return null;
+        if (tagMap[nearest ?? 0] == null) return null;
 
         final moveTarget =
             _forecastMoveUnit(index, nearest, usedSuggestedRowHeightIfAny)!;
-        
+
         // assume suggestRowHeight will move to correct offset in just one time.
         // if the rule doesn't work (in variable row height case), we will use backup solution (non-suggested way)
         final suggestedDuration =
@@ -330,9 +327,9 @@ mixin AutoScrollControllerMixin on ScrollController
 
   @override
   Future highlight(int index,
-      {bool cancelExistHighlights: true,
-      Duration highlightDuration: _highlightDuration,
-      bool animated: true}) async {
+      {bool cancelExistHighlights = true,
+      Duration highlightDuration = _highlightDuration,
+      bool animated = true}) async {
     final tag = tagMap[index];
     return tag == null
         ? null
@@ -379,7 +376,7 @@ mixin AutoScrollControllerMixin on ScrollController
     } else {
       final offsetToLastState =
           _offsetToRevealInViewport(currentNearestIndex, alignment);
-      
+
       absoluteOffsetToViewport = offsetToLastState?.offset;
       if (absoluteOffsetToViewport == null)
         absoluteOffsetToViewport = defaultScrollDistanceOffset;
@@ -400,9 +397,8 @@ mixin AutoScrollControllerMixin on ScrollController
   }
 
   /// bring the state node (already created but all of it may not be fully in the viewport) into viewport
-  Future _bringIntoViewportIfNeed(int index, AutoScrollPosition? preferPosition,
-      Future move(double offset)) async {
-
+  Future _bringIntoViewportIfNeed(
+      int index, double? preferPosition, Future move(double offset)) async {
     if (preferPosition != null) {
       double targetOffset = _directionalOffsetToRevealInViewport(
           index, _positionToAlignment(preferPosition));
@@ -435,19 +431,11 @@ mixin AutoScrollControllerMixin on ScrollController
     }
   }
 
-  double _positionToAlignment(AutoScrollPosition position) {
-    return position == AutoScrollPosition.begin
-        ? 0
-        : position == AutoScrollPosition.end
-            ? 1
-            : 0.5;
+  double _positionToAlignment(double position) {
+    return position;
   }
 
-  AutoScrollPosition _alignmentToPosition(double alignment) => alignment == 0
-      ? AutoScrollPosition.begin
-      : alignment == 1
-          ? AutoScrollPosition.end
-          : AutoScrollPosition.middle;
+  double _alignmentToPosition(double alignment) => alignment;
 
   /// return offset, which is a absolute offset to bring the target index object into the location(depends on [direction]) of viewport
   /// see also: _offsetYToRevealInViewport()
@@ -477,9 +465,8 @@ mixin AutoScrollControllerMixin on ScrollController
     if (ctx == null) return null;
 
     final renderBox = ctx.findRenderObject()!;
-    assert(Scrollable.of(ctx) != null);
     final RenderAbstractViewport viewport =
-        RenderAbstractViewport.of(renderBox)!;
+        RenderAbstractViewport.of(renderBox);
     final revealedOffset = viewport.getOffsetToReveal(renderBox, alignment);
 
     return revealedOffset;
@@ -493,7 +480,9 @@ void _cancelAllHighlights([AutoScrollTagState? state]) {
   _highlights.clear();
 }
 
-typedef Widget TagHighlightBuilder(BuildContext context, Animation<double> highlight);
+typedef Widget TagHighlightBuilder(
+    BuildContext context, Animation<double> highlight);
+
 class AutoScrollTag extends StatefulWidget {
   final AutoScrollController controller;
   final int index;
@@ -511,8 +500,9 @@ class AutoScrollTag extends StatefulWidget {
       this.builder,
       this.color,
       this.highlightColor,
-      this.disabled: false})
-      : assert(child != null || builder != null), super(key: key);
+      this.disabled = false})
+      : assert(child != null || builder != null),
+        super(key: key);
 
   @override
   AutoScrollTagState createState() {
@@ -578,9 +568,13 @@ class AutoScrollTagState<W extends AutoScrollTag> extends State<W>
   @override
   Widget build(BuildContext context) {
     final animation = _controller ?? kAlwaysDismissedAnimation;
-    return widget.builder?.call(context, animation)
-          ?? buildHighlightTransition(context: context, highlight: animation, child: widget.child!,
-            background: widget.color, highlightColor: widget.highlightColor);
+    return widget.builder?.call(context, animation) ??
+        buildHighlightTransition(
+            context: context,
+            highlight: animation,
+            child: widget.child!,
+            background: widget.color,
+            highlightColor: widget.highlightColor);
   }
 
   //used to make sure we will drop the old highlight
@@ -589,9 +583,9 @@ class AutoScrollTagState<W extends AutoScrollTag> extends State<W>
 
   /// this function can be called multiple times. every call will reset the highlight style.
   Future highlight(
-      {bool cancelExisting: true,
-      Duration highlightDuration: _highlightDuration,
-      bool animated: true}) async {
+      {bool cancelExisting = true,
+      Duration highlightDuration = _highlightDuration,
+      bool animated = true}) async {
     if (!mounted) return null;
 
     if (cancelExisting) {
@@ -637,7 +631,7 @@ class AutoScrollTagState<W extends AutoScrollTag> extends State<W>
     return null;
   }
 
-  void _cancelController({bool reset: true}) {
+  void _cancelController({bool reset = true}) {
     if (_controller != null) {
       if (_controller!.isAnimating) _controller!.stop();
 
@@ -646,17 +640,20 @@ class AutoScrollTagState<W extends AutoScrollTag> extends State<W>
   }
 }
 
-Widget buildHighlightTransition({required BuildContext context, required Animation<double> highlight, 
-  required Widget child, Color? background, Color? highlightColor}) {
+Widget buildHighlightTransition(
+    {required BuildContext context,
+    required Animation<double> highlight,
+    required Widget child,
+    Color? background,
+    Color? highlightColor}) {
   return DecoratedBoxTransition(
-    decoration: DecorationTween(
-      begin: background != null ?
-      BoxDecoration(color: background) :
-      BoxDecoration(),
-      end: background != null ?
-      BoxDecoration(color: background) :
-      BoxDecoration(color: highlightColor)
-    ).animate(highlight),
-    child: child
-  );
+      decoration: DecorationTween(
+              begin: background != null
+                  ? BoxDecoration(color: background)
+                  : BoxDecoration(),
+              end: background != null
+                  ? BoxDecoration(color: background)
+                  : BoxDecoration(color: highlightColor))
+          .animate(highlight),
+      child: child);
 }

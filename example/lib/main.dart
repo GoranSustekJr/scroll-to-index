@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Rect.fromLTRB(0, 0, 0, MediaQuery.of(context).padding.bottom),
         axis: scrollDirection);
     randomList = List.generate(maxCount,
-            (index) => <int>[index, (maxHeight * random.nextDouble()).toInt()]);
+        (index) => <int>[index, (maxHeight * random.nextDouble()).toInt()]);
   }
 
   @override
@@ -99,8 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future _scrollToCounter() async {
-    await controller.scrollToIndex(counter,
-        preferPosition: AutoScrollPosition.begin);
+    await controller.scrollToIndex(counter, preferPosition: 0.5);
     controller.highlight(counter);
   }
 
