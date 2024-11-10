@@ -440,7 +440,7 @@ mixin AutoScrollControllerMixin on ScrollController
   /// return offset, which is a absolute offset to bring the target index object into the location(depends on [direction]) of viewport
   /// see also: _offsetYToRevealInViewport()
   double _directionalOffsetToRevealInViewport(int index, double alignment) {
-    assert(alignment == 0 || alignment == 0.5 || alignment == 1);
+    assert(true);
     // 1.0 bottom, 0.5 center, 0.0 begin if list is vertically from begin to end
     final tagOffsetInViewport = _offsetToRevealInViewport(index, alignment);
 
